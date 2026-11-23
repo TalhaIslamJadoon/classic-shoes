@@ -433,6 +433,27 @@ table.sizeguide th{background:#2a1808;color:#f6ead2;text-transform:none;letter-s
   .of-grid{grid-template-columns:1fr}
 }
 </style>
+<style>
+/* TO-FIX 2026-11-24: mobile try-on repair */
+
+@media(max-width:640px){
+  /* Shorter card photo on phones: the front orbiting card no longer swallows the model */
+  .ocard img{height:64px}
+}
+
+</style>
+<style>
+/* TO-FIX2 2026-11-24: mobile try-on restack (shoes) */
+
+@media(max-width:640px){
+  /* Mobile studio stacks: model first, then the orbit in its own band —
+     the front card no longer swallows the model. */
+  .stage{display:flex;flex-direction:column;align-items:center;min-height:0}
+  .model-wrap{position:relative;left:auto;top:auto;transform:none;order:1}
+  .orbit{position:relative;inset:auto;order:2;width:100%;height:205px;margin-top:6px}
+}
+
+</style>
 </head>
 <body>
 
@@ -1162,12 +1183,14 @@ function buildOrbit(){
 function positionOrbit(){
   var stage = $("#stage"); if(!stage) return;
   var W = stage.clientWidth, H = stage.clientHeight;
+  var orbEl = $("#orbit"); if (orbEl && orbEl.clientHeight) H = orbEl.clientHeight;
   var rx = Math.min(W*0.36, 430), cy = H*0.44;
+  rx = Math.min(rx, Math.max(40, W/2 - 70)); /* keep orbiting cards inside the stage on narrow screens */
   orbitCards.forEach(function(c){
     var a = c.off + orbitAngle;
     var x = W/2 + Math.sin(a)*rx;
     var d = (Math.cos(a)+1)/2; /* 0 back/edge .. 1 front/centre */
-    var sc = 0.62 + d*0.5, op = 0.35 + d*0.65;
+    var sc = 0.62 + d*(W <= 560 ? 0.38 : 0.5), op = 0.35 + d*0.65; /* gentler front-card scale on phones so the model stays visible */
     c.el.style.left = x + "px";
     c.el.style.top = (cy + Math.cos(a)*14) + "px";
     c.el.style.transform = "translateY(-50%) scale(" + sc.toFixed(3) + ")";
